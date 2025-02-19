@@ -34,11 +34,18 @@
             return params.get(name) ? decodeURIComponent(params.get(name)) : "";
         }
 
-        function updateURL(text) {
-            const params = new URLSearchParams();
-            params.set('text', encodeURIComponent(text));
-            window.history.replaceState(null, '', '?' + params.toString());
-        }
+	function updateURL(text) {
+	    const params = new URLSearchParams();
+	    params.set('text', encodeURIComponent(text));
+    
+	    // Only update the iframe's location if it's inside an iframe
+	    if (window !== window.parent) {
+	        window.parent.history.replaceState(null, '', '?' + params.toString());
+	    } else {
+	        window.history.replaceState(null, '', '?' + params.toString());
+	    }
+	}
+
 
         textarea.value = getQueryParam('text');
 
