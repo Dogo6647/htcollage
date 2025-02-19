@@ -34,23 +34,25 @@
             return params.get(name) ? decodeURIComponent(params.get(name)) : "";
         }
 
-	function updateURL(text) {
-	    const params = new URLSearchParams();
-	    params.set('text', encodeURIComponent(text));
-    
-	    // Only update the iframe's location if it's inside an iframe
-	    if (window !== window.parent) {
-	        window.parent.history.replaceState(null, '', '?' + params.toString());
-	    } else {
-	        window.history.replaceState(null, '', '?' + params.toString());
-	    }
-	}
+        function updateURL(text) {
+            const params = new URLSearchParams();
+            params.set('text', encodeURIComponent(text));
+            
+            window.history.replaceState(null, '', '?' + params.toString());
+        }
 
+        function sendMessageToParent() {
+            if (window !== window.parent) {
+                window.parent.postMessage(textarea.value, "*");  // Send text content to Scratch extension
+            }
+        }
 
+        // Load text from URL parameters
         textarea.value = getQueryParam('text');
 
         textarea.addEventListener('input', () => {
             updateURL(textarea.value);
+            sendMessageToParent(); // Notify Scratch extension
         });
 
         textarea.addEventListener('keydown', (e) => {
@@ -61,8 +63,13 @@
 
                 textarea.value = textarea.value.substring(0, start) + "\t" + textarea.value.substring(end);
                 textarea.selectionStart = textarea.selectionEnd = start + 1;
+
+                sendMessageToParent(); // Ensure Scratch gets updates even when using Tab
             }
         });
+
+        // Send initial message on load
+        sendMessageToParent();
     </script>
 </body>
 </html>
